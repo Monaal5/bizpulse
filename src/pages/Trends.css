@@ -1,0 +1,72 @@
+.trends-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-chip {
+    padding: 0.5rem 1rem;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-chip.active {
+    background-color: var(--primary);
+    color: white;
+    border-color: var(--primary);
+}
+
+.trends-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.heatmap-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 400px;
+}
+
+.movers-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 400px;
+    overflow-y: auto;
+}
+
+.mover-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border);
+}
+
+.mover-item:last-child {
+    border-bottom: none;
+}
+
+.timeline-card {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    height: 350px;
+}
