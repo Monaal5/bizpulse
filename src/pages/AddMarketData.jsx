@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Save, X, DollarSign, Award, Building2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
 
 const AddMarketData = () => {
     const navigate = useNavigate();
@@ -13,15 +14,52 @@ const AddMarketData = () => {
         description: ''
     });
 
+    useEffect(() => {
+        const checkUser = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) {
+                // Optional: Save current path to redirect back after login
+                navigate('/auth');
+            }
+        };
+        checkUser();
+    }, [navigate]);
+
     const handleSearch = (e) => {
         e.preventDefault();
         console.log('Searching for:', searchTerm);
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
         console.log('Submitting data:', formData);
-        navigate('/dashboard');
+
+        try {
+            const { error } = await supabase
+                .from('companies')
+                .insert([
+                    {
+                        name: formData.name,
+                        category: formData.sector,
+                        funding_amount: parseFloat(formData.funding),
+                        global_rank: parseInt(formData.rank),
+                        description: formData.description,
+                        logo: '🏢', // Default logo
+                        color: '#64748b', // Default color
+                        tags: [formData.sector, 'New Entry'],
+                        funding_data: [],
+                        competitors: []
+                    }
+                ]);
+
+            if (error) throw error;
+
+            alert('Company added successfully!');
+            navigate('/dashboard/companies');
+        } catch (error) {
+            console.error('Error adding company:', error);
+            alert('Error adding company: ' + error.message);
+        }
     };
 
     const inputStyle = {
@@ -90,6 +128,7 @@ const AddMarketData = () => {
                                 <option>Fintech</option>
                                 <option>Retail</option>
                                 <option>Education</option>
+                                <option>E-commerce</option>
                             </select>
                         </div>
                     </div>

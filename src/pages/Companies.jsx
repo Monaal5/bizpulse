@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../supabaseClient';
 import CompanyDetail from './CompanyDetail';
 import './Companies.css';
 
@@ -86,13 +87,51 @@ const mockCompanies = [
 
 const Companies = () => {
     const [selectedCompany, setSelectedCompany] = useState(null);
+    const [companies, setCompanies] = useState(mockCompanies);
+
+    useEffect(() => {
+        fetchCompanies();
+    }, []);
+
+    const fetchCompanies = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('companies')
+                .select('*');
+
+            if (error) throw error;
+
+            if (data && data.length > 0) {
+                // Transform DB snake_case to camelCase if needed, or ensure DB has correct structure
+                // Assuming DB columns match what we need or we map them here
+                const formattedData = data.map(c => ({
+                    id: c.id,
+                    name: c.name,
+                    description: c.description,
+                    logo: c.logo,
+                    color: c.color,
+                    tags: c.tags || [],
+                    category: c.category,
+                    fundingData: c.funding_data || [],
+                    competitors: c.competitors || []
+                }));
+                // Combine with mock or replace. User wants "real data", so let's prefer DB but keep mock if DB is empty for now?
+                // Actually, let's append DB data to mock data for the demo, or just use DB if we populate it well.
+                // User said "add one more company... also use real company data".
+                // I'll append for now to ensure the UI isn't empty if DB is empty.
+                setCompanies([...mockCompanies, ...formattedData]);
+            }
+        } catch (error) {
+            console.error('Error fetching companies:', error);
+        }
+    };
 
     if (selectedCompany) {
         return <CompanyDetail company={selectedCompany} onBack={() => setSelectedCompany(null)} />;
     }
 
     // Group companies by category
-    const categories = [...new Set(mockCompanies.map(c => c.category))];
+    const categories = [...new Set(companies.map(c => c.category))];
 
     return (
         <div className="companies-list-page">
@@ -102,7 +141,7 @@ const Companies = () => {
                 <div key={category} className="mb-8">
                     <h3 className="text-xl font-semibold mb-4 text-primary border-b border-border pb-2">{category}</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {mockCompanies.filter(c => c.category === category).map(company => (
+                        {companies.filter(c => c.category === category).map(company => (
                             <div
                                 key={company.id}
                                 className="card cursor-pointer hover:border-primary transition-colors"

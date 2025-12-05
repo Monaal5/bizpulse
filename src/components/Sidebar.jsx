@@ -1,8 +1,16 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, TrendingUp, Users, ShieldCheck, Settings, HelpCircle, LogOut, Activity } from 'lucide-react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, TrendingUp, Users, ShieldCheck, Settings, HelpCircle, LogOut, Activity, User } from 'lucide-react';
+import { supabase } from '../supabaseClient';
 
 const Sidebar = () => {
+    const navigate = useNavigate();
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        navigate('/auth');
+    };
+
     return (
         <aside className="sidebar">
             <div className="sidebar-header flex items-center gap-2 mb-8">
@@ -34,6 +42,10 @@ const Sidebar = () => {
                     <Settings size={20} />
                     <span>Settings</span>
                 </NavLink>
+                <NavLink to="/dashboard/profile" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                    <User size={20} />
+                    <span>Profile</span>
+                </NavLink>
             </nav>
 
             <div className="sidebar-footer">
@@ -41,7 +53,7 @@ const Sidebar = () => {
                     <HelpCircle size={20} />
                     <span>Help</span>
                 </div>
-                <div className="nav-item">
+                <div className="nav-item cursor-pointer" onClick={handleLogout}>
                     <LogOut size={20} />
                     <span>Logout</span>
                 </div>

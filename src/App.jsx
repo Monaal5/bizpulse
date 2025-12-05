@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Landing from './pages/Landing';
+import Auth from './pages/Auth';
 import DashboardLayout from './components/DashboardLayout';
 import DashboardHome from './pages/DashboardHome';
 import Trends from './pages/Trends';
@@ -8,12 +9,14 @@ import Companies from './pages/Companies';
 import Ledger from './pages/Ledger';
 import Settings from './pages/Settings';
 import AddMarketData from './pages/AddMarketData';
+import UserProfile from './pages/UserProfile';
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/auth" element={<Auth />} />
         <Route path="/dashboard" element={<DashboardLayout />}>
           <Route index element={<DashboardHome />} />
           <Route path="trends" element={<Trends />} />
@@ -21,6 +24,7 @@ function App() {
           <Route path="ledger" element={<Ledger />} />
           <Route path="settings" element={<Settings />} />
           <Route path="add-data" element={<AddMarketData />} />
+          <Route path="profile" element={<UserProfile />} />
         </Route>
       </Routes>
     </Router>
