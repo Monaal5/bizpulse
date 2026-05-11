@@ -112,7 +112,7 @@ def scrape_wikipedia_info(company_name):
 # Add CORS middleware to allow React app to communicate with FastAPI
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Adjust this in production
+    allow_origins=["https://bizpulse-two.vercel.app"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
