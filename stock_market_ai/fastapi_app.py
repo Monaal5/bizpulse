@@ -439,8 +439,18 @@ def analyze_stock(req: AnalysisRequest):
         # Calculate Risk Score (0-100)
         risk_score = 45 # Default
         if not df.empty:
-            volatility = df['Close'].pct_change().std() * 100
-            risk_score = min(95, max(15, int(volatility * 30)))
+            try:
+                # Ensure we are working with a Series, not a DataFrame (handle multi-index)
+                close_prices = df['Close']
+                if isinstance(close_prices, pd.DataFrame):
+                    close_prices = close_prices.iloc[:, 0]
+                
+                volatility_val = close_prices.pct_change().std()
+                if not pd.isna(volatility_val):
+                    risk_score = min(95, max(15, int(float(volatility_val) * 3000)))
+            except Exception as e:
+                print(f"Risk calculation error: {e}")
+                risk_score = 45
         
         # Strategic Competitors (Heuristic)
         industry_lower = industry.lower()
