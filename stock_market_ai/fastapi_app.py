@@ -112,11 +112,15 @@ def scrape_wikipedia_info(company_name):
 # Add CORS middleware to allow React app to communicate with FastAPI
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://bizpulse-two.vercel.app"], 
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/health")
+def health_check():
+    return {"status": "online"}
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "xgboost_stock_model.pkl")
