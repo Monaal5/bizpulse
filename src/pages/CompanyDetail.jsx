@@ -16,7 +16,7 @@ const CompanyDetail = ({ company, onBack }) => {
     const fetchStockAnalysis = async () => {
         try {
             setLoading(true);
-            const response = await fetch('http://127.0.0.1:8000/api/analyze', {
+            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/analyze`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ stock_name: company.name })
