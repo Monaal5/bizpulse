@@ -10,6 +10,7 @@ import Ledger from './pages/Ledger';
 import Settings from './pages/Settings';
 import AddMarketData from './pages/AddMarketData';
 import UserProfile from './pages/UserProfile';
+import StockAI from './pages/StockAI';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="settings" element={<Settings />} />
           <Route path="add-data" element={<AddMarketData />} />
           <Route path="profile" element={<UserProfile />} />
+          <Route path="stock-ai" element={<StockAI />} />
         </Route>
       </Routes>
     </Router>

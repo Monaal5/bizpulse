@@ -22,10 +22,10 @@ create policy "Public companies are viewable by everyone"
   on companies for select
   using ( true );
 
--- Create a policy that allows authenticated users to insert
-create policy "Authenticated users can insert companies"
+-- Create a policy that allows anyone to insert (publicly for demo)
+create policy "Public users can insert companies"
   on companies for insert
-  with check ( auth.role() = 'authenticated' );
+  with check ( true );
 
 -- Insert E-commerce companies with real-ish data
 insert into companies (name, description, logo, color, tags, category, funding_amount, global_rank, funding_data, competitors)

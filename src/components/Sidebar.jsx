@@ -38,6 +38,10 @@ const Sidebar = () => {
                     <ShieldCheck size={20} />
                     <span>Blockchain Ledger</span>
                 </NavLink>
+                <NavLink to="/dashboard/stock-ai" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
+                    <TrendingUp size={20} />
+                    <span>Stock AI</span>
+                </NavLink>
                 <NavLink to="/dashboard/settings" className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}>
                     <Settings size={20} />
                     <span>Settings</span>

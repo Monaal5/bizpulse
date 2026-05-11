@@ -1,6 +1,8 @@
-import React from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Treemap } from 'recharts';
-import { Calendar } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Treemap, AreaChart, Area } from 'recharts';
+import { Calendar, Loader2, TrendingUp, Info, Activity, Layers, ArrowUpRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { supabase } from '../supabaseClient';
 import './Trends.css';
 
 const dataTimeline = [
@@ -13,136 +15,202 @@ const dataTimeline = [
     { name: 'Jul', value1: 3490, value2: 4300 },
 ];
 
-const dataTreemap = [
-    { name: 'Technology', size: 1000, fill: '#3B82F6' },
-    { name: 'Healthcare', size: 800, fill: '#10B981' },
-    { name: 'Finance', size: 600, fill: '#8B5CF6' },
-    { name: 'Retail', size: 400, fill: '#F59E0B' },
-    { name: 'Energy', size: 300, fill: '#EF4444' },
-    { name: 'Education', size: 200, fill: '#6366F1' },
-];
-
 const CustomContent = (props) => {
     const { root, depth, x, y, width, height, index, payload, colors, rank, name } = props;
     return (
-        <g>
+        <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: index * 0.05 }}>
             <rect
                 x={x}
                 y={y}
                 width={width}
                 height={height}
+                rx={8}
+                ry={8}
                 style={{
-                    fill: payload?.fill || '#3B82F6', // Use the fill from the data or fallback
-                    stroke: '#fff',
-                    strokeWidth: 2 / (depth + 1e-10),
-                    strokeOpacity: 1 / (depth + 1e-10),
+                    fill: payload?.fill || '#3B82F6',
+                    stroke: 'rgba(255,255,255,0.1)',
+                    strokeWidth: 1,
                 }}
             />
-            {width > 50 && height > 30 && (
+            {width > 60 && height > 40 && (
                 <text
                     x={x + width / 2}
-                    y={y + height / 2 + 7}
+                    y={y + height / 2}
                     textAnchor="middle"
                     fill="#fff"
                     fontSize={14}
+                    fontWeight="700"
+                    style={{ pointerEvents: 'none' }}
                 >
                     {name}
                 </text>
             )}
-        </g>
+        </motion.g>
     );
 };
 
 const Trends = () => {
+    const [companies, setCompanies] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [treemapData, setTreemapData] = useState([]);
+
+    useEffect(() => {
+        const fetchTrendsData = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('companies')
+                    .select('*');
+                
+                if (error) throw error;
+                setCompanies(data);
+
+                const categoryCounts = data.reduce((acc, curr) => {
+                    acc[curr.category] = (acc[curr.category] || 0) + 1;
+                    return acc;
+                }, {});
+
+                const colors = ['#6366f1', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#0ea5e9'];
+                const formattedTreemap = Object.keys(categoryCounts).map((cat, i) => ({
+                    name: cat,
+                    size: categoryCounts[cat] * 100,
+                    fill: colors[i % colors.length]
+                }));
+                setTreemapData(formattedTreemap);
+            } catch (err) {
+                console.error("Error fetching trends:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchTrendsData();
+    }, []);
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: { opacity: 1, transition: { staggerChildren: 0.1 } }
+    };
+
+    const itemVariants = {
+        hidden: { y: 20, opacity: 0 },
+        visible: { y: 0, opacity: 1 }
+    };
+
     return (
-        <div>
-            <div className="trends-header">
-                <div>
-                    <h2 className="text-2xl font-bold">Trends / Sector Explorer</h2>
-                    <p className="text-muted">Track market trends and competitor data to make informed decisions.</p>
+        <motion.div 
+            initial="hidden"
+            animate="visible"
+            variants={containerVariants}
+            className="trends-container"
+        >
+            <motion.div variants={itemVariants} className="trends-header-modern">
+                <div className="title-group">
+                    <h2 className="text-3xl font-bold">Dynamic Sector Explorer</h2>
+                    <p className="text-muted">Real-time market concentration and emerging industry shifts.</p>
                 </div>
-                <button className="btn btn-outline flex items-center gap-2">
-                    <Calendar size={16} /> Jul 5, 2024 - Aug 7, 2024
-                </button>
-            </div>
-
-            <div className="filter-bar">
-                <div className="filter-chip active">All Sectors</div>
-                <div className="filter-chip">Technology</div>
-                <div className="filter-chip">Healthcare</div>
-                <div className="filter-chip">Finance</div>
-                <div className="filter-chip">Retail</div>
-                <div className="filter-chip">Fintech</div>
-                <div className="filter-chip">E-commerce</div>
-            </div>
-
-            <div className="trends-grid">
-                <div className="heatmap-card">
-                    <div className="flex justify-between items-center mb-4">
-                        <h3 className="text-lg font-bold">Sector Heatmap</h3>
-                        <div className="text-xs text-muted">Low ● ● ● ● High</div>
-                    </div>
-                    <ResponsiveContainer width="100%" height="90%">
-                        <Treemap
-                            data={dataTreemap}
-                            dataKey="size"
-                            aspectRatio={4 / 3}
-                            stroke="#fff"
-                            content={<CustomContent />}
-                        />
-                    </ResponsiveContainer>
+                <div className="live-status">
+                    <div className="pulse-dot"></div>
+                    <span className="text-xs font-bold uppercase tracking-widest text-accent">Live Analysis</span>
                 </div>
+            </motion.div>
 
-                <div className="movers-card">
-                    <div className="flex justify-between items-center mb-4 border-b border-border pb-2">
-                        <h3 className="text-lg font-bold">Top Movers</h3>
-                        <div className="flex gap-4 text-sm">
-                            <span className="text-primary font-bold cursor-pointer">Top Gainers</span>
-                            <span className="text-muted cursor-pointer hover:text-white">Top Losers</span>
-                        </div>
-                    </div>
-
-                    <div className="movers-list">
-                        {[
-                            { name: 'AI Innovations', sector: 'Technology', change: '+15.2%', color: 'bg-blue-500' },
-                            { name: 'HealthTech United', sector: 'Healthcare', change: '+12.8%', color: 'bg-green-500' },
-                            { name: 'Fintech Solutions', sector: 'Finance', change: '+8.7%', color: 'bg-purple-500' },
-                            { name: 'C-commerce World', sector: 'Retail', change: '+6.1%', color: 'bg-yellow-500' },
-                            { name: 'BioTech Labs', sector: 'Healthcare', change: '+13.1%', color: 'bg-green-500' },
-                        ].map((item, i) => (
-                            <div className="mover-item" key={i}>
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-8 h-8 rounded-full ${item.color.replace('bg-', '')} flex items-center justify-center text-xs font-bold`} style={{ backgroundColor: item.color === 'bg-blue-500' ? '#3B82F6' : item.color === 'bg-green-500' ? '#10B981' : item.color === 'bg-purple-500' ? '#8B5CF6' : '#F59E0B' }}>
-                                        {item.name.substring(0, 2).toUpperCase()}
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-sm">{item.name}</div>
-                                        <div className="text-xs text-muted">{item.sector}</div>
-                                    </div>
-                                </div>
-                                <div className="text-accent font-bold text-sm">{item.change}</div>
+            {loading ? (
+                <div className="flex items-center justify-center p-20">
+                    <Loader2 className="animate-spin text-primary" size={48} />
+                </div>
+            ) : (
+                <>
+                <div className="trends-layout">
+                    <motion.div variants={itemVariants} className="heatmap-section glass">
+                        <div className="section-header">
+                            <div className="flex items-center gap-2">
+                                <Layers size={18} className="text-primary" />
+                                <h3 className="text-lg font-bold">Market Concentration</h3>
                             </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
+                            <div className="text-xs text-muted">Density by active entries</div>
+                        </div>
+                        <div className="treemap-wrapper">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <Treemap
+                                    data={treemapData}
+                                    dataKey="size"
+                                    aspectRatio={16 / 9}
+                                    stroke="#fff"
+                                    content={<CustomContent />}
+                                />
+                            </ResponsiveContainer>
+                        </div>
+                    </motion.div>
 
-            <div className="timeline-card">
-                <h3 className="text-lg font-bold mb-4">Timeline Explorer</h3>
-                <ResponsiveContainer width="100%" height="85%">
-                    <LineChart data={dataTimeline}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
-                        <XAxis dataKey="name" stroke="#9CA3AF" axisLine={false} tickLine={false} />
-                        <YAxis stroke="#9CA3AF" axisLine={false} tickLine={false} />
-                        <Tooltip
-                            contentStyle={{ backgroundColor: '#1F2937', border: '1px solid #374151', borderRadius: '8px', color: '#fff' }}
-                        />
-                        <Line type="monotone" dataKey="value1" stroke="#3B82F6" strokeWidth={2} dot={false} />
-                        <Line type="monotone" dataKey="value2" stroke="#10B981" strokeWidth={2} dot={false} />
-                    </LineChart>
-                </ResponsiveContainer>
-            </div>
-        </div>
+                    <motion.div variants={itemVariants} className="insights-section glass">
+                        <div className="section-header">
+                            <div className="flex items-center gap-2">
+                                <Activity size={18} className="text-accent" />
+                                <h3 className="text-lg font-bold">Recent Intelligence</h3>
+                            </div>
+                            <TrendingUp className="text-accent" size={18} />
+                        </div>
+
+                        <div className="insights-list">
+                            {companies.slice(-6).reverse().map((item, i) => (
+                                <motion.div 
+                                    whileHover={{ x: 5, backgroundColor: 'rgba(255,255,255,0.03)' }}
+                                    className="insight-item" 
+                                    key={i}
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="entry-logo">
+                                            {item.logo || '🏢'}
+                                        </div>
+                                        <div className="entry-meta">
+                                            <div className="entry-name">{item.name}</div>
+                                            <div className="entry-category">{item.category}</div>
+                                        </div>
+                                    </div>
+                                    <ArrowUpRight size={14} className="text-muted opacity-0 group-hover:opacity-100 transition-opacity" />
+                                    <div className="status-badge">NEW</div>
+                                </motion.div>
+                            ))}
+                        </div>
+                    </motion.div>
+                </div>
+
+                <motion.div variants={itemVariants} className="timeline-section glass">
+                    <div className="section-header">
+                        <div className="flex items-center gap-2">
+                            <TrendingUp size={18} className="text-primary" />
+                            <h3 className="text-lg font-bold">Sentiment Velocity Explorer</h3>
+                        </div>
+                        <p className="text-xs text-muted">Aggregated ecosystem interest over time</p>
+                    </div>
+                    <div className="timeline-chart-wrapper">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={dataTimeline}>
+                                <defs>
+                                    <linearGradient id="colorV1" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                                    </linearGradient>
+                                    <linearGradient id="colorV2" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                                        <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                                <XAxis dataKey="name" stroke="#94a3b8" axisLine={false} tickLine={false} tick={{fontSize: 12}} />
+                                <YAxis stroke="#94a3b8" axisLine={false} tickLine={false} tick={{fontSize: 12}} />
+                                <Tooltip
+                                    contentStyle={{ background: '#1e293b', border: 'none', borderRadius: '12px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.5)' }}
+                                />
+                                <Area type="monotone" dataKey="value1" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorV1)" />
+                                <Area type="monotone" dataKey="value2" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorV2)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                </motion.div>
+                </>
+            )}
+        </motion.div>
     );
 };
 

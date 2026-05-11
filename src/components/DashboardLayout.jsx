@@ -5,9 +5,9 @@ import './DashboardLayout.css';
 
 const DashboardLayout = () => {
     return (
-        <div className="dashboard-layout">
+        <div className="layout-main">
             <Sidebar />
-            <main className="main-content">
+            <main className="content-wrapper">
                 <Outlet />
             </main>
         </div>
